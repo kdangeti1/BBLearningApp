@@ -1,0 +1,19 @@
+{
+  "name": "Bluebonnet Quest — Grade 3 Texas Learning Platform",
+  "short_name": "Bluebonnet G3",
+  "description": "Grade 3 Interactive Learning Platform aligned to Texas Bluebonnet Learning Curriculum (Math, Reading Language Arts, Foundational Skills)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

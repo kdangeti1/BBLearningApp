@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+}
+
+/* Dyslexia-Friendly Font Mode */
+.dyslexia-font,
+.dyslexia-font * {
+  font-family: "OpenDyslexic", "Comic Sans MS", "Lexend", "Trebuchet MS", Verdana, sans-serif !important;
+  letter-spacing: 0.045em !important;
+  word-spacing: 0.14em !important;
+  line-height: 1.75 !important;
+}
+
+/* Large Buttons Mode for Grade 3 Accessibility */
+.large-buttons-mode button,
+.large-buttons-mode [role="button"] {
+  min-height: 3.1rem;
+  font-size: 1.06rem;
+  padding-left: 1.15rem;
+  padding-right: 1.15rem;
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.45);
+}
+

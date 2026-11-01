@@ -1,0 +1,10 @@
+i want to develop an 3rd grade learning app using Bluebonner Learning Grade 3 and help my 3rd grade to learn the school circullm . all the guides are avilable in the bleow links.
+Can you help me to build an app reading the guides and design an app which can help my to learn and test thier knowldege..  create this app like IXL  .. 
+Curriculum is available [K-12%20Curriculum%20At-A-Glance%20Master%20%282026-27%29.xlsx](file;file:///c%3A/Projects/apps/BBLearningApp/K-12%20Curriculum%20At-A-Glance%20Master%20%282026-27%29.xlsx) under 3rd grade sheet. Provide detailed, Plan , Design and things that i need to build this app and also track my kids progress 
+
+Bluebonnet Learning Grade 3 Math https://tealearn.instructure.com/courses/9541/modules
+
+Bluebonnet Learning Grade 3 Reading Language Arts  https://tealearn.instructure.com/courses/9555/modules
+
+Bluebonnet Learning Grade 3 Foundational Skills  https://tealearn.instructure.com/courses/9575/modules
+
