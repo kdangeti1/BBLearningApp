@@ -272,7 +272,12 @@ export function ChildProfileManager() {
             </div>
 
             <div className="space-y-3">
-              {studentsList.map((child) => {
+              {studentsList.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-xs font-semibold text-slate-500 dark:border-slate-700">
+                  No child profiles created yet. Use the form on the left to add your child.
+                </div>
+              ) : (
+                studentsList.map((child) => {
                 const isSelected = child.id === student.id;
                 const childProgMap = allStudentsProgress[child.id] || {};
                 const progValues = Object.values(childProgMap);
@@ -434,21 +439,19 @@ export function ChildProfileManager() {
                           <span>Change Password</span>
                         </button>
 
-                        {studentsList.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => deleteChildProfile(child.id)}
-                            className="rounded-xl border border-rose-200 bg-rose-50 p-1.5 text-rose-600 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950"
-                            title="Delete Profile"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteChildProfile(child.id)}
+                          className="rounded-xl border border-rose-200 bg-rose-50 p-1.5 text-rose-600 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950"
+                          title="Delete Profile"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
           </div>
         </div>

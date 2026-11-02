@@ -36,25 +36,25 @@ const typedCurriculum = curriculumData as unknown as {
   badges: BadgeDoc[];
 };
 
-const INITIAL_STUDENT: StudentDoc = {
-  id: "student-leo-g3",
-  username: "leo",
-  password: "1234",
-  name: "Leo Martinez",
-  email: "leo.g3@bluebonnet.edu",
-  avatar: "🦊",
+const EMPTY_STUDENT: StudentDoc = {
+  id: "",
+  username: "",
+  password: "",
+  name: "Student",
+  email: "",
+  avatar: "🎓",
   grade: 3,
   parentId: "admin",
-  xp: 1450,
-  stars: 34,
-  coins: 280,
-  streakDays: 5,
+  xp: 0,
+  stars: 0,
+  coins: 0,
+  streakDays: 0,
   lastActiveDate: new Date().toISOString().slice(0, 10),
   dailyGoalMinutes: 25,
-  todayMinutesSpent: 18,
-  todayQuestionsAnswered: 12,
+  todayMinutesSpent: 0,
+  todayQuestionsAnswered: 0,
   dailyGoalTargetQuestions: 15,
-  earnedBadgeIds: ["badge-5-day-streak", "badge-multiplication-master"],
+  earnedBadgeIds: [],
   accessibility: {
     dyslexiaFont: false,
     textToSpeech: true,
@@ -62,7 +62,7 @@ const INITIAL_STUDENT: StudentDoc = {
     largeButtons: false,
     audioInstructions: true,
   },
-  createdAt: "2026-08-19T08:00:00.000Z",
+  createdAt: new Date().toISOString(),
 };
 
 const INITIAL_PARENT: ParentDoc = {
@@ -71,212 +71,14 @@ const INITIAL_PARENT: ParentDoc = {
   password: "admin123",
   name: "Admin / Parent",
   email: "admin@bluebonnet.edu",
-  studentIds: ["student-leo-g3"],
+  studentIds: [],
   pinCode: "1234",
   enableAiFeatures: process.env.NEXT_PUBLIC_ENABLE_AI === "true",
   createdAt: "2026-08-19T08:00:00.000Z",
 };
 
-const INITIAL_PROGRESS: Record<string, SkillProgressDoc> = {
-  "math-m1-s1": {
-    id: "student-leo-g3_math-m1-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m1",
-    lessonId: "math-m1-l1",
-    skillId: "math-m1-s1",
-    skillCode: "M1.A.1",
-    skillTitle: "Understand Equal Groups as Multiplication",
-    teks: "3.4D, 3.4E",
-    smartScore: 88,
-    level: "Mastered",
-    attemptsCount: 16,
-    correctCount: 15,
-    consecutiveCorrect: 6,
-    totalTimeSeconds: 420,
-    needsRemediation: false,
-    lastPracticedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  "math-m1-s2": {
-    id: "student-leo-g3_math-m1-s2",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m1",
-    lessonId: "math-m1-l1",
-    skillId: "math-m1-s2",
-    skillCode: "M1.B.1",
-    skillTitle: "Relate Multiplication and Division Using Arrays",
-    teks: "3.4F, 3.4J, 3.5D",
-    smartScore: 72,
-    level: "Proficient",
-    attemptsCount: 12,
-    correctCount: 10,
-    consecutiveCorrect: 3,
-    totalTimeSeconds: 380,
-    needsRemediation: false,
-    recommendedEasierSkillId: "math-m1-s1",
-    lastPracticedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  "math-m2-s1": {
-    id: "student-leo-g3_math-m2-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m2",
-    lessonId: "math-m2-l1",
-    skillId: "math-m2-s1",
-    skillCode: "M2.A.1",
-    skillTitle: "Compose and Decompose Numbers to 100,000 & Elapsed Time",
-    teks: "3.2A, 3.2D, 3.7C",
-    smartScore: 65,
-    level: "Proficient",
-    attemptsCount: 11,
-    correctCount: 9,
-    consecutiveCorrect: 2,
-    totalTimeSeconds: 340,
-    needsRemediation: false,
-    recommendedEasierSkillId: "math-m1-s1",
-    lastPracticedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-  },
-  "math-m5-s1": {
-    id: "student-leo-g3_math-m5-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m5",
-    lessonId: "math-m5-l1",
-    skillId: "math-m5-s1",
-    skillCode: "M5.A.1",
-    skillTitle: "Unit Fractions and Number Line Partitioning",
-    teks: "3.3A, 3.3C, 3.7A",
-    smartScore: 46,
-    level: "Developing",
-    attemptsCount: 9,
-    correctCount: 5,
-    consecutiveCorrect: 0,
-    totalTimeSeconds: 410,
-    needsRemediation: true,
-    recommendedEasierSkillId: "math-m4-s1",
-    retestScheduledAt: new Date(Date.now() + 86400000 * 2).toISOString(),
-    lastPracticedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-  },
-  "rla-u1-s1": {
-    id: "student-leo-g3_rla-u1-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-rla",
-    unitId: "rla-u1",
-    lessonId: "rla-u1-l1",
-    skillId: "rla-u1-s1",
-    skillCode: "RLA.1.1",
-    skillTitle: "Analyze Theme, Character Perspective & Plot in Classic Tales",
-    teks: "3.8A, 3.8B, 3.8C",
-    smartScore: 84,
-    level: "Mastered",
-    attemptsCount: 14,
-    correctCount: 13,
-    consecutiveCorrect: 5,
-    totalTimeSeconds: 510,
-    needsRemediation: false,
-    lastPracticedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  "rla-u2-s1": {
-    id: "student-leo-g3_rla-u2-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-rla",
-    unitId: "rla-u2",
-    lessonId: "rla-u2-l1",
-    skillId: "rla-u2-s1",
-    skillCode: "RLA.2.1",
-    skillTitle: "Identify Central Idea, Text Features & Context Clues",
-    teks: "3.9D.i, 3.9D.ii, 3.3B",
-    smartScore: 76,
-    level: "Proficient",
-    attemptsCount: 12,
-    correctCount: 10,
-    consecutiveCorrect: 3,
-    totalTimeSeconds: 450,
-    needsRemediation: false,
-    recommendedEasierSkillId: "rla-u1-s1",
-    lastPracticedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  "fs-u1-s1": {
-    id: "student-leo-g3_fs-u1-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-fs",
-    unitId: "fs-u1",
-    lessonId: "fs-u1-l1",
-    skillId: "fs-u1-s1",
-    skillCode: "FS.1.1",
-    skillTitle: "Decode Closed Syllables (VC/CV, VCCCV) & Trigraphs",
-    teks: "3.2A.i, 3.2A.ii, 3.2B.i",
-    smartScore: 91,
-    level: "Mastered",
-    attemptsCount: 15,
-    correctCount: 14,
-    consecutiveCorrect: 7,
-    totalTimeSeconds: 320,
-    needsRemediation: false,
-    lastPracticedAt: new Date().toISOString(),
-  },
-  "fs-u3-s1": {
-    id: "student-leo-g3_fs-u3-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-fs",
-    unitId: "fs-u3",
-    lessonId: "fs-u3-l1",
-    skillId: "fs-u3-s1",
-    skillCode: "FS.3.1",
-    skillTitle: "Decode VCe Split Digraphs & Apply the Drop Final -e Rule",
-    teks: "3.2A.ii, 3.2B.vi",
-    smartScore: 52,
-    level: "Proficient",
-    attemptsCount: 8,
-    correctCount: 5,
-    consecutiveCorrect: 1,
-    totalTimeSeconds: 290,
-    needsRemediation: true,
-    recommendedEasierSkillId: "fs-u2-s1",
-    retestScheduledAt: new Date(Date.now() + 86400000).toISOString(),
-    lastPracticedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-};
-
-const INITIAL_ATTEMPTS: AttemptDoc[] = [
-  {
-    id: "att-1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m1",
-    lessonId: "math-m1-l1",
-    skillId: "math-m1-s1",
-    questionId: "math-m1-q1",
-    questionType: "multiple_choice",
-    isCorrect: true,
-    selectedAnswer: "4 × 3 = 12",
-    smartScoreBefore: 81,
-    smartScoreAfter: 88,
-    timeSpentSeconds: 22,
-    usedHint: false,
-    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
-    dateKey: new Date().toISOString().slice(0, 10),
-  },
-  {
-    id: "att-2",
-    studentId: "student-leo-g3",
-    subjectId: "subj-rla",
-    unitId: "rla-u1",
-    lessonId: "rla-u1-l1",
-    skillId: "rla-u1-s1",
-    questionId: "rla-u1-q1",
-    questionType: "reading_comprehension",
-    isCorrect: true,
-    selectedAnswer: "Loyal friendship and hospitality make life joyful.",
-    smartScoreBefore: 79,
-    smartScoreAfter: 84,
-    timeSpentSeconds: 38,
-    usedHint: false,
-    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
-    dateKey: new Date().toISOString().slice(0, 10),
-  },
-];
+const INITIAL_PROGRESS: Record<string, SkillProgressDoc> = {};
+const INITIAL_ATTEMPTS: AttemptDoc[] = [];
 
 export type ActiveRole = "student" | "parent";
 export type MainTab =
@@ -390,10 +192,8 @@ export const useLearningStore = create<LearningStoreState>()(
     (set, get) => ({
       isAuthenticated: false,
       loggedInAccountType: null,
-      studentsList: [INITIAL_STUDENT],
-      allStudentsProgress: {
-        [INITIAL_STUDENT.id]: INITIAL_PROGRESS,
-      },
+      studentsList: [],
+      allStudentsProgress: {},
 
       activeRole: "student",
       activeTab: "dashboard",
@@ -410,7 +210,7 @@ export const useLearningStore = create<LearningStoreState>()(
       skills: typedCurriculum.skills,
       questions: typedCurriculum.questions,
       badges: typedCurriculum.badges,
-      student: INITIAL_STUDENT,
+      student: EMPTY_STUDENT,
       parent: INITIAL_PARENT,
       progress: INITIAL_PROGRESS,
       attempts: INITIAL_ATTEMPTS,
@@ -431,9 +231,9 @@ export const useLearningStore = create<LearningStoreState>()(
             cleanUser === state.parent.email.toLowerCase()) &&
           cleanPass === adminPassword
         ) {
-          const activeStudent = state.studentsList[0] || state.student;
+          const activeStudent = state.studentsList[0] || EMPTY_STUDENT;
           const activeProg =
-            state.allStudentsProgress[activeStudent.id] || state.progress;
+            state.allStudentsProgress[activeStudent.id] || {};
           set({
             isAuthenticated: true,
             loggedInAccountType: "admin",
@@ -616,10 +416,11 @@ export const useLearningStore = create<LearningStoreState>()(
 
       deleteChildProfile: async (studentId) => {
         const state = get();
-        if (state.studentsList.length <= 1) return; // Keep at least 1 child profile
         const remaining = state.studentsList.filter((s) => s.id !== studentId);
         const nextActive =
-          state.student.id === studentId ? remaining[0] : state.student;
+          state.student.id === studentId
+            ? remaining[0] || EMPTY_STUDENT
+            : state.student;
         const nextAllProg = { ...state.allStudentsProgress };
         delete nextAllProg[studentId];
 
@@ -664,7 +465,7 @@ export const useLearningStore = create<LearningStoreState>()(
                   d.username ||
                   d.name.toLowerCase().split(" ")[0] ||
                   "student",
-                password: d.password || "1234",
+                password: d.password || "",
               });
             }
           });
@@ -675,7 +476,7 @@ export const useLearningStore = create<LearningStoreState>()(
           const remoteProgressByStudent: Record<
             string,
             Record<string, SkillProgressDoc>
-          > = { ...get().allStudentsProgress };
+          > = {};
 
           progressSnap.forEach((docSnap) => {
             const p = docSnap.data() as SkillProgressDoc;
@@ -687,23 +488,19 @@ export const useLearningStore = create<LearningStoreState>()(
             }
           });
 
-          if (remoteStudents.length > 0) {
-            // Merge remote students with local list by id
-            const mergedMap = new Map<string, StudentDoc>();
-            for (const s of get().studentsList) mergedMap.set(s.id, s);
-            for (const s of remoteStudents) mergedMap.set(s.id, s);
-            const mergedList = Array.from(mergedMap.values());
-            const activeId = get().student.id;
-            const activeStudent =
-              mergedMap.get(activeId) || mergedList[0];
+          // Sync directly with Firestore as single source of truth
+          const currentStudentId = get().student?.id;
+          const activeStudent =
+            remoteStudents.find((s) => s.id === currentStudentId) ||
+            remoteStudents[0] ||
+            EMPTY_STUDENT;
 
-            set({
-              studentsList: mergedList,
-              allStudentsProgress: remoteProgressByStudent,
-              student: activeStudent,
-              progress: remoteProgressByStudent[activeStudent.id] || get().progress,
-            });
-          }
+          set({
+            studentsList: remoteStudents,
+            allStudentsProgress: remoteProgressByStudent,
+            student: activeStudent,
+            progress: remoteProgressByStudent[activeStudent.id] || {},
+          });
         } catch (err) {
           console.warn("Firestore profile sync notice:", err);
         }
@@ -1189,7 +986,8 @@ export const useLearningStore = create<LearningStoreState>()(
       },
     }),
     {
-      name: "bluebonnet-grade3-learning-store-v2",
+      name: "bluebonnet-grade3-learning-store-v3",
+      version: 3,
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         loggedInAccountType: state.loggedInAccountType,

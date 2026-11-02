@@ -71,44 +71,50 @@ export function LoginScreen() {
                   <Users className="h-4 w-4" />
                   <span>Select Your Student Profile ({studentsList.length})</span>
                 </div>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                  {studentsList.map((child) => {
-                    const isSelected =
-                      loginMode === "child" &&
-                      username.toLowerCase() ===
-                        (child.username || "").toLowerCase();
-                    return (
-                      <button
-                        key={child.id}
-                        type="button"
-                        onClick={() =>
-                          handleSelectChildCard(child.username || "")
-                        }
-                        className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
-                          isSelected
-                            ? "border-amber-300 bg-white text-slate-900 shadow-lg"
-                            : "border-white/20 bg-white/10 text-white hover:bg-white/20"
-                        }`}
-                      >
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl">
-                          {child.avatar}
-                        </span>
-                        <div className="overflow-hidden">
-                          <div className="truncate text-sm font-extrabold">
-                            {child.name}
+                {studentsList.length === 0 ? (
+                  <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-xs font-semibold text-white">
+                    No student profiles found. Please sign in as <strong>Admin</strong> to create your child&apos;s profile.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    {studentsList.map((child) => {
+                      const isSelected =
+                        loginMode === "child" &&
+                        username.toLowerCase() ===
+                          (child.username || "").toLowerCase();
+                      return (
+                        <button
+                          key={child.id}
+                          type="button"
+                          onClick={() =>
+                            handleSelectChildCard(child.username || "")
+                          }
+                          className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
+                            isSelected
+                              ? "border-amber-300 bg-white text-slate-900 shadow-lg"
+                              : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                          }`}
+                        >
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl">
+                            {child.avatar}
+                          </span>
+                          <div className="overflow-hidden">
+                            <div className="truncate text-sm font-extrabold">
+                              {child.name}
+                            </div>
+                            <div
+                              className={`text-xs font-bold ${
+                                isSelected ? "text-indigo-600" : "text-indigo-200"
+                              }`}
+                            >
+                              {child.xp} XP • Grade 3
+                            </div>
                           </div>
-                          <div
-                            className={`text-xs font-bold ${
-                              isSelected ? "text-indigo-600" : "text-indigo-200"
-                            }`}
-                          >
-                            {child.xp} XP • Grade 3
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 

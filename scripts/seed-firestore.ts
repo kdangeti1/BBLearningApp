@@ -97,119 +97,17 @@ async function seedFirestore() {
     batch.set(doc(db, "badges", badge.id), badge);
   }
 
-  // 7. students Collection
-  batch.set(doc(db, "students", "student-leo-g3"), {
-    id: "student-leo-g3",
-    username: "leo",
-    password: "1234",
-    name: "Leo Martinez",
-    email: "leo.g3@bluebonnet.edu",
-    avatar: "🦊",
-    grade: 3,
-    parentId: "admin",
-    xp: 1450,
-    stars: 34,
-    coins: 280,
-    streakDays: 5,
-    lastActiveDate: new Date().toISOString().slice(0, 10),
-    dailyGoalMinutes: 25,
-    todayMinutesSpent: 18,
-    todayQuestionsAnswered: 12,
-    dailyGoalTargetQuestions: 15,
-    earnedBadgeIds: ["badge-5-day-streak", "badge-multiplication-master"],
-    accessibility: {
-      dyslexiaFont: false,
-      textToSpeech: true,
-      darkMode: false,
-      largeButtons: false,
-      audioInstructions: true,
-    },
-    createdAt: new Date().toISOString(),
-  });
-
-  // 8. parents Collection (Admin Account)
+  // 7. parents Collection (Admin Account)
   batch.set(doc(db, "parents", "admin"), {
     id: "admin",
     username: "admin",
     password: "admin123",
     name: "Admin / Parent",
     email: "admin@bluebonnet.edu",
-    studentIds: ["student-leo-g3"],
+    studentIds: [],
     pinCode: "1234",
     enableAiFeatures: false,
     createdAt: new Date().toISOString(),
-  });
-
-  // 9. progress Collection
-  batch.set(doc(db, "progress", "student-leo-g3_math-m1-s1"), {
-    id: "student-leo-g3_math-m1-s1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m1",
-    lessonId: "math-m1-l1",
-    skillId: "math-m1-s1",
-    skillCode: "M1.A.1",
-    skillTitle: "Understand Equal Groups as Multiplication",
-    teks: "3.4D, 3.4E",
-    smartScore: 88,
-    level: "Mastered",
-    attemptsCount: 16,
-    correctCount: 15,
-    consecutiveCorrect: 6,
-    totalTimeSeconds: 420,
-    needsRemediation: false,
-    lastPracticedAt: new Date().toISOString(),
-  });
-
-  // 10. attempts Collection
-  batch.set(doc(db, "attempts", "att-seed-1"), {
-    id: "att-seed-1",
-    studentId: "student-leo-g3",
-    subjectId: "subj-math",
-    unitId: "math-m1",
-    lessonId: "math-m1-l1",
-    skillId: "math-m1-s1",
-    questionId: "math-m1-q1",
-    questionType: "multiple_choice",
-    isCorrect: true,
-    selectedAnswer: "4 × 3 = 12",
-    smartScoreBefore: 81,
-    smartScoreAfter: 88,
-    timeSpentSeconds: 22,
-    usedHint: false,
-    timestamp: new Date().toISOString(),
-    dateKey: new Date().toISOString().slice(0, 10),
-  });
-
-  // 11. reports Collection
-  batch.set(doc(db, "reports", "rep-seed-1"), {
-    id: "rep-seed-1",
-    studentId: "student-leo-g3",
-    parentId: "parent-martinez",
-    generatedAt: new Date().toISOString(),
-    period: "weekly",
-    generatedBy: "deterministic_engine",
-    overallMasteryAvg: 74,
-    totalQuestionsAnswered: 97,
-    overallAccuracy: 84,
-    totalMinutesSpent: 47,
-    strongSkills: [
-      { skillCode: "FS.1.1", title: "Decode Closed Syllables & Trigraphs", score: 91 },
-      { skillCode: "M1.A.1", title: "Understand Equal Groups as Multiplication", score: 88 },
-    ],
-    weakSkills: [
-      {
-        skillCode: "M5.A.1",
-        title: "Unit Fractions and Number Line Partitioning",
-        score: 46,
-        recommendedAction: "Practice prerequisite skill M4.A.1 and review its worked example.",
-      },
-    ],
-    summaryText: "Leo has maintained a 5-day learning streak with an average SmartScore of 74/100.",
-    actionableTips: [
-      "Focus 10 minutes on M5.A.1: Unit Fractions on a Number Line.",
-      "Read aloud today's Bluebonnet Reader passage in the Foundational Skills Lab.",
-    ],
   });
 
   console.log("\nConnecting to Cloud Firestore (aws-practice-app-fd31b)...");
