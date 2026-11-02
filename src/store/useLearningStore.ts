@@ -477,7 +477,7 @@ export const useLearningStore = create<LearningStoreState>()(
         return {
           success: false,
           message:
-            "Invalid ID or password. Use 'admin' / 'admin123' for Admin, or a Child username and password.",
+            "Invalid Login ID or password. Please check your credentials and try again.",
         };
       },
 

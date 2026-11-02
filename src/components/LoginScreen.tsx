@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   Sparkles,
   LogIn,
-  KeyRound,
   Users,
 } from "lucide-react";
 
@@ -16,7 +15,7 @@ export function LoginScreen() {
   const { studentsList, login, loadProfilesFromFirestore } = useLearningStore();
 
   const [loginMode, setLoginMode] = useState<"child" | "admin">("child");
-  const [username, setUsername] = useState<string>("leo");
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -34,13 +33,8 @@ export function LoginScreen() {
   const handleSwitchMode = (mode: "child" | "admin") => {
     setLoginMode(mode);
     setErrorMsg(null);
-    if (mode === "admin") {
-      setUsername("admin");
-      setPassword("");
-    } else {
-      setUsername(studentsList[0]?.username || "leo");
-      setPassword("");
-    }
+    setUsername("");
+    setPassword("");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -88,7 +82,7 @@ export function LoginScreen() {
                         key={child.id}
                         type="button"
                         onClick={() =>
-                          handleSelectChildCard(child.username || "leo")
+                          handleSelectChildCard(child.username || "")
                         }
                         className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
                           isSelected
@@ -108,7 +102,7 @@ export function LoginScreen() {
                               isSelected ? "text-indigo-600" : "text-indigo-200"
                             }`}
                           >
-                            ID: {child.username} • {child.xp} XP
+                            {child.xp} XP • Grade 3
                           </div>
                         </div>
                       </button>
@@ -118,19 +112,10 @@ export function LoginScreen() {
               </div>
             </div>
 
-            {/* Bottom Info Box */}
             <div className="mt-8 rounded-2xl bg-white/10 p-4 text-xs text-indigo-100 backdrop-blur-sm">
-              <div className="font-extrabold text-white">
-                🔑 Demo & Admin Credentials:
-              </div>
-              <div className="mt-1 space-y-1">
-                <div>
-                  • <strong>Admin Login:</strong> ID <code className="rounded bg-white/20 px-1.5 py-0.5 font-bold text-white">admin</code> / Password <code className="rounded bg-white/20 px-1.5 py-0.5 font-bold text-white">admin123</code>
-                </div>
-                <div>
-                  • <strong>Default Child Login:</strong> ID <code className="rounded bg-white/20 px-1.5 py-0.5 font-bold text-white">leo</code> / Password <code className="rounded bg-white/20 px-1.5 py-0.5 font-bold text-white">1234</code>
-                </div>
-              </div>
+              <p className="font-semibold text-white">
+                Select your profile above or sign in with your Login ID and password to continue your learning journey.
+              </p>
             </div>
           </div>
 
@@ -192,7 +177,9 @@ export function LoginScreen() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder={
-                      loginMode === "admin" ? "admin" : "e.g., leo"
+                      loginMode === "admin"
+                        ? "Enter Admin ID"
+                        : "Enter your Login ID"
                     }
                     className="w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:border-indigo-600 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
@@ -212,7 +199,7 @@ export function LoginScreen() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={
                       loginMode === "admin"
-                        ? "Enter admin password (admin123)"
+                        ? "Enter admin password"
                         : "Enter your student password"
                     }
                     className="w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:border-indigo-600 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
@@ -238,46 +225,9 @@ export function LoginScreen() {
                 </span>
               </button>
             </form>
-
-            {/* Quick-Fill Demo Buttons for Convenience */}
-            <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                One-Click Quick Login:
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    login("admin", "admin123");
-                  }}
-                  className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-extrabold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
-                >
-                  <KeyRound className="h-3.5 w-3.5" />
-                  <span>Quick Login: Admin (admin / admin123)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const firstChild = studentsList[0];
-                    if (firstChild) {
-                      login(firstChild.username || "leo", firstChild.password || "1234");
-                    }
-                  }}
-                  className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-extrabold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                >
-                  <span>{studentsList[0]?.avatar || "🦊"}</span>
-                  <span>
-                    Quick Login: {studentsList[0]?.name || "Leo"} (
-                    {studentsList[0]?.username || "leo"} /{" "}
-                    {studentsList[0]?.password || "1234"})
-                  </span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
