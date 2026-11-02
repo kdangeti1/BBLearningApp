@@ -25,6 +25,7 @@ import {
   GraduationCap,
   Users,
   LogOut,
+  Gamepad2,
 } from "lucide-react";
 
 export function Navbar() {
@@ -101,6 +102,11 @@ export function Navbar() {
       id: "foundational_lab",
       label: "Foundational Lab",
       icon: <Headphones className="h-4 w-4" />,
+    },
+    {
+      id: "brain_games",
+      label: "Brain Games 🧩",
+      icon: <Gamepad2 className="h-4 w-4" />,
     },
     {
       id: "badges",

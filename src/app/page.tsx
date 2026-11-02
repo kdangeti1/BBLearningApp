@@ -7,6 +7,7 @@ import { LoginScreen } from "@/components/LoginScreen";
 import { ChildProfileManager } from "@/components/ChildProfileManager";
 import { SkillPracticeEngine } from "@/components/SkillPracticeEngine";
 import { FoundationalSkillsLab } from "@/components/FoundationalSkillsLab";
+import { BrainGamesHub } from "@/components/BrainGamesHub";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { CurriculumImportEngine } from "@/components/CurriculumImportModal";
 import { BLUEBONNET_36_WEEK_PACING } from "@/data/scope-and-sequence";
@@ -402,6 +403,29 @@ export default function HomePage() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Quick Relaxation & Brain Break Banner */}
+            <div className="overflow-hidden rounded-3xl border-2 border-indigo-200 bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 p-6 text-white shadow-md dark:border-indigo-800">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="max-w-xl">
+                  <span className="rounded-full bg-white/20 px-3 py-0.5 text-[11px] font-black uppercase tracking-wider">
+                    Relaxation & Critical Thinking
+                  </span>
+                  <h3 className="mt-2 text-xl font-black">
+                    Need a Brain Break? Play KenKen Math Puzzles & Word Ladders! 🧩
+                  </h3>
+                  <p className="mt-1 text-xs text-indigo-100">
+                    Relax with fun 3×3 & 4×4 KenKen cages, word morphing, and pattern mysteries. Test your logic, earn bonus XP & Treasure Coins!
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("brain_games")}
+                  className="rounded-2xl bg-amber-400 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:bg-amber-300 active:scale-95"
+                >
+                  Play Brain Games Now 🎮
+                </button>
               </div>
             </div>
           </div>
@@ -1151,6 +1175,11 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        {/* ============================================================
+            TAB 8.5: BRAIN GAMES & KENKEN PUZZLES
+           ============================================================ */}
+        {activeTab === "brain_games" && <BrainGamesHub />}
 
         {/* ============================================================
             TAB 9: PARENT DASHBOARD & RECHARTS ANALYTICS
