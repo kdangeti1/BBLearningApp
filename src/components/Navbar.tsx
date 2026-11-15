@@ -26,6 +26,7 @@ import {
   Users,
   LogOut,
   Gamepad2,
+  FileText,
 } from "lucide-react";
 
 export function Navbar() {
@@ -107,6 +108,11 @@ export function Navbar() {
       id: "brain_games",
       label: "Brain Games 🧩",
       icon: <Gamepad2 className="h-4 w-4" />,
+    },
+    {
+      id: "staar_prep",
+      label: "STAAR Prep 📝",
+      icon: <FileText className="h-4 w-4" />,
     },
     {
       id: "badges",

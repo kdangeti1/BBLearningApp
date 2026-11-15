@@ -90,6 +90,7 @@ export type MainTab =
   | "reading_studio"
   | "foundational_lab"
   | "brain_games"
+  | "staar_prep"
   | "badges"
   | "parent_dashboard"
   | "curriculum_import"
@@ -176,6 +177,7 @@ interface LearningStoreState {
 
   addFluencyPracticeXP: (wpm: number, accuracy: number) => void;
   addBrainGameReward: (xp: number, coins: number, stars?: number) => void;
+  addStaarTestReward: (xp: number, coins: number, stars?: number, minutesSpent?: number) => void;
   addCustomPracticeQuestions: (newQuestions: QuestionDoc[]) => void;
   importCustomCurriculumData: (payload: {
     units?: UnitDoc[];
@@ -854,6 +856,33 @@ export const useLearningStore = create<LearningStoreState>()(
             stars: state.student.stars + stars,
             coins: state.student.coins + coins,
             todayMinutesSpent: state.student.todayMinutesSpent + 3,
+          };
+          const updatedList = state.studentsList.map((s) =>
+            s.id === updatedStudent.id ? updatedStudent : s
+          );
+          if (isFirebaseConfigured && db) {
+            setDoc(
+              doc(db, FIRESTORE_COLLECTIONS.STUDENTS, updatedStudent.id),
+              updatedStudent
+            ).catch(() => {});
+          }
+          return {
+            student: updatedStudent,
+            studentsList: updatedList,
+          };
+        });
+      },
+
+      addStaarTestReward: (xp, coins, stars = 2, minutesSpent = 15) => {
+        set((state) => {
+          if (!state.student.id) return {};
+          const updatedStudent: StudentDoc = {
+            ...state.student,
+            xp: state.student.xp + xp,
+            stars: state.student.stars + stars,
+            coins: state.student.coins + coins,
+            todayMinutesSpent: state.student.todayMinutesSpent + minutesSpent,
+            todayQuestionsAnswered: state.student.todayQuestionsAnswered + 1,
           };
           const updatedList = state.studentsList.map((s) =>
             s.id === updatedStudent.id ? updatedStudent : s

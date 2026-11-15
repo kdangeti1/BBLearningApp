@@ -8,6 +8,7 @@ import { ChildProfileManager } from "@/components/ChildProfileManager";
 import { SkillPracticeEngine } from "@/components/SkillPracticeEngine";
 import { FoundationalSkillsLab } from "@/components/FoundationalSkillsLab";
 import { BrainGamesHub } from "@/components/BrainGamesHub";
+import { STAARTestHub } from "@/components/STAARTestHub";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { CurriculumImportEngine } from "@/components/CurriculumImportModal";
 import { BLUEBONNET_36_WEEK_PACING } from "@/data/scope-and-sequence";
@@ -425,6 +426,34 @@ export default function HomePage() {
                   className="rounded-2xl bg-amber-400 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:bg-amber-300 active:scale-95"
                 >
                   Play Brain Games Now 🎮
+                </button>
+              </div>
+            </div>
+
+            {/* Official Texas STAAR Released Exam Practice Banner */}
+            <div className="overflow-hidden rounded-3xl border-2 border-blue-200 bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-600 p-6 text-white shadow-md dark:border-blue-900">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="max-w-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-white/20 px-3 py-0.5 text-[11px] font-black uppercase tracking-wider">
+                      Texas STAAR Assessment
+                    </span>
+                    <span className="rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-black text-slate-950">
+                      32 Questions • Released Test
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-xl font-black">
+                    Practice the 2022 STAAR Grade 3 Mathematics Exam 📝
+                  </h3>
+                  <p className="mt-1 text-xs text-blue-100">
+                    Includes Question #2 (&quot;Haruko did 9 sit-ups in P.E. class&quot;) and all 32 official questions with Texas Education Agency answer rationales! Take a timed 60-min mock exam or practice with instant tutor feedback.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("staar_prep")}
+                  className="rounded-2xl bg-white px-5 py-3 text-xs font-black text-indigo-900 shadow-md transition hover:bg-indigo-50 active:scale-95"
+                >
+                  Start STAAR Practice Test 🚀
                 </button>
               </div>
             </div>
@@ -1180,6 +1209,11 @@ export default function HomePage() {
             TAB 8.5: BRAIN GAMES & KENKEN PUZZLES
            ============================================================ */}
         {activeTab === "brain_games" && <BrainGamesHub />}
+
+        {/* ============================================================
+            TAB 8.6: TEXAS STAAR GRADE 3 EXAM PREP & PRACTICE
+           ============================================================ */}
+        {activeTab === "staar_prep" && <STAARTestHub />}
 
         {/* ============================================================
             TAB 9: PARENT DASHBOARD & RECHARTS ANALYTICS
