@@ -9,6 +9,7 @@ import { SkillPracticeEngine } from "@/components/SkillPracticeEngine";
 import { FoundationalSkillsLab } from "@/components/FoundationalSkillsLab";
 import { BrainGamesHub } from "@/components/BrainGamesHub";
 import { STAARTestHub } from "@/components/STAARTestHub";
+import { SchoolTestHub } from "@/components/SchoolTestHub";
 import { ParentDashboard } from "@/components/ParentDashboard";
 import { CurriculumImportEngine } from "@/components/CurriculumImportModal";
 import { BLUEBONNET_36_WEEK_PACING } from "@/data/scope-and-sequence";
@@ -426,6 +427,34 @@ export default function HomePage() {
                   className="rounded-2xl bg-amber-400 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:bg-amber-300 active:scale-95"
                 >
                   Play Brain Games Now 🎮
+                </button>
+              </div>
+            </div>
+
+            {/* School Daily Grade Test & Twin Practice Banner */}
+            <div className="overflow-hidden rounded-3xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-700 via-teal-600 to-indigo-700 p-6 text-white shadow-md dark:border-emerald-900">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="max-w-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-amber-400 px-3 py-0.5 text-[11px] font-black uppercase text-slate-950">
+                      Module 3 Topic A Daily Grade
+                    </span>
+                    <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-bold">
+                      9 School Questions + 9 Twin Variations + Work Area
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-xl font-black">
+                    Practice School Daily Grade Test + Step-by-Step Working Area ✏️
+                  </h3>
+                  <p className="mt-1 text-xs text-emerald-100">
+                    Practice the exact 9 questions from the school test (Haruko sit-ups, Alex &amp; Sara basketball, 858,386 place value jumps, Base-10 models, and input-output tables) plus twin variations with an interactive step-by-step working area and drawing pad!
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("school_test")}
+                  className="rounded-2xl bg-amber-400 px-5 py-3 text-xs font-black text-slate-950 shadow-md transition hover:bg-amber-300 active:scale-95"
+                >
+                  Open School Test &amp; Work Area ✍️
                 </button>
               </div>
             </div>
@@ -1209,6 +1238,11 @@ export default function HomePage() {
             TAB 8.5: BRAIN GAMES & KENKEN PUZZLES
            ============================================================ */}
         {activeTab === "brain_games" && <BrainGamesHub />}
+
+        {/* ============================================================
+            TAB 8.55: SCHOOL DAILY GRADE TEST + STEP-BY-STEP WORK AREA
+           ============================================================ */}
+        {activeTab === "school_test" && <SchoolTestHub />}
 
         {/* ============================================================
             TAB 8.6: TEXAS STAAR GRADE 3 EXAM PREP & PRACTICE

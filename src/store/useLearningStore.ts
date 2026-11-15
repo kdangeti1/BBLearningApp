@@ -90,6 +90,7 @@ export type MainTab =
   | "reading_studio"
   | "foundational_lab"
   | "brain_games"
+  | "school_test"
   | "staar_prep"
   | "badges"
   | "parent_dashboard"

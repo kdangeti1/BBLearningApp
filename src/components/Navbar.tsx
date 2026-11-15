@@ -110,6 +110,11 @@ export function Navbar() {
       icon: <Gamepad2 className="h-4 w-4" />,
     },
     {
+      id: "school_test",
+      label: "School Test ✏️",
+      icon: <FileText className="h-4 w-4" />,
+    },
+    {
       id: "staar_prep",
       label: "STAAR Prep 📝",
       icon: <FileText className="h-4 w-4" />,
