@@ -217,8 +217,12 @@ export function SchoolTestHub() {
   const [randomSeed, setRandomSeed] = useState<number>(1);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // User selected answers
+  // User selected answers (before & after submit)
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Tracks which questions have been locked/submitted via the Submit Answer button
+  const [submittedQuestions, setSubmittedQuestions] = useState<
+    Record<string, boolean>
+  >({});
   // Kid's own custom steps per question: questionId -> array of step strings
   const [kidOwnSteps, setKidOwnSteps] = useState<Record<string, string[]>>({});
   // Guided steps visibility (HIDDEN by default so kids come up with their own steps first!)
@@ -380,9 +384,21 @@ export function SchoolTestHub() {
     return false;
   };
 
+  const isSubmitted = Boolean(submittedQuestions[currentQ.id]);
+
+  // Selecting an option ONLY highlights the choice (does not grade or reveal answer yet).
+  // Once submitted, options are locked and cannot be changed unless Reset Answers is clicked at the top.
   const handleSelectOption = (optId: string) => {
+    if (isSubmitted) return;
     setAnswers((prev) => ({ ...prev, [currentQ.id]: optId }));
-    if (optId.toUpperCase() === currentQ.correctAnswer.toUpperCase()) {
+  };
+
+  // Submitting locks the selected answer, checks correctness, and reveals explanation
+  const handleSubmitAnswer = () => {
+    const selected = answers[currentQ.id];
+    if (!selected || isSubmitted) return;
+    setSubmittedQuestions((prev) => ({ ...prev, [currentQ.id]: true }));
+    if (selected.toUpperCase() === currentQ.correctAnswer.toUpperCase()) {
       playSuccessSound();
       addStaarTestReward(20, 6, 1, 2);
     }
@@ -390,16 +406,18 @@ export function SchoolTestHub() {
 
   const userAnswer = answers[currentQ.id] || "";
   const isCorrect =
+    isSubmitted &&
     Boolean(userAnswer) &&
     userAnswer.toUpperCase() === currentQ.correctAnswer.toUpperCase();
 
-  // Score calculation
+  // Score calculation (only counts submitted questions)
   const scoreSummary = useMemo(() => {
     let correct = 0;
     let answered = 0;
     activeQuestions.forEach((q) => {
       const a = answers[q.id];
-      if (a) {
+      const sub = submittedQuestions[q.id];
+      if (a && sub) {
         answered++;
         if (a.toUpperCase() === q.correctAnswer.toUpperCase()) {
           correct++;
@@ -411,7 +429,7 @@ export function SchoolTestHub() {
         ? Math.round((correct / activeQuestions.length) * 100)
         : 0;
     return { correct, answered, total: activeQuestions.length, pct };
-  }, [activeQuestions, answers]);
+  }, [activeQuestions, answers, submittedQuestions]);
 
   return (
     <div className="space-y-6">
@@ -485,6 +503,7 @@ export function SchoolTestHub() {
               setFilterMode("random_retake");
               setRandomSeed((s) => s + 1);
               setAnswers({});
+              setSubmittedQuestions({});
               setCurrentIndex(0);
             }}
             className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-black transition ${
@@ -520,8 +539,11 @@ export function SchoolTestHub() {
         <div className="flex flex-wrap items-center gap-2">
           {activeQuestions.map((q, idx) => {
             const ans = answers[q.id];
+            const isSub = Boolean(submittedQuestions[q.id]);
             const right =
-              ans && ans.toUpperCase() === q.correctAnswer.toUpperCase();
+              isSub &&
+              ans &&
+              ans.toUpperCase() === q.correctAnswer.toUpperCase();
             const isCurr = idx === currentIndex;
 
             return (
@@ -533,8 +555,10 @@ export function SchoolTestHub() {
                     ? "ring-2 ring-indigo-600 ring-offset-2 bg-indigo-600 text-white"
                     : right
                     ? "bg-emerald-500 text-white"
-                    : ans
+                    : isSub && ans
                     ? "bg-rose-500 text-white"
+                    : ans
+                    ? "border-2 border-indigo-400 bg-indigo-50 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
               >
@@ -547,7 +571,10 @@ export function SchoolTestHub() {
         <button
           onClick={() => {
             setAnswers({});
+            setSubmittedQuestions({});
             setStepInputs({});
+            setKidOwnSteps({});
+            setScratchNotes({});
             clearCanvas();
           }}
           className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
@@ -712,8 +739,12 @@ export function SchoolTestHub() {
 
             {/* Answer Choices */}
             <div className="mt-5 space-y-2.5">
-              <div className="text-xs font-black uppercase tracking-wider text-slate-400">
-                Choose Your Final Answer After Working Out Your Steps →
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-black uppercase tracking-wider text-slate-400">
+                  {isSubmitted
+                    ? "🔒 Response Submitted & Locked (Use 'Reset Answers' at top to retry)"
+                    : "Select Your Answer Choice, Then Click Submit Answer →"}
+                </div>
               </div>
               {currentQ.options.map((opt) => {
                 const isSelected = userAnswer === opt.id;
@@ -724,25 +755,38 @@ export function SchoolTestHub() {
                 let style =
                   "border-slate-200 bg-slate-50/70 hover:border-indigo-300 hover:bg-indigo-50/40 text-slate-800 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-100";
 
-                if (userAnswer) {
+                if (!isSubmitted && isSelected) {
+                  style =
+                    "border-indigo-600 bg-indigo-50/90 text-indigo-950 font-bold shadow-xs dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-100";
+                } else if (isSubmitted) {
                   if (isRightChoice) {
                     style =
                       "border-emerald-500 bg-emerald-50 text-emerald-950 font-bold dark:border-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-100";
                   } else if (isSelected && !isRightChoice) {
                     style =
                       "border-rose-400 bg-rose-50 text-rose-950 font-bold dark:border-rose-600 dark:bg-rose-950/50 dark:text-rose-100";
+                  } else {
+                    style =
+                      "border-slate-200 bg-slate-50/40 opacity-65 text-slate-600 dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400";
                   }
                 }
 
                 return (
                   <button
                     key={opt.id}
+                    disabled={isSubmitted}
                     onClick={() => handleSelectOption(opt.id)}
-                    className={`flex w-full items-start gap-3.5 rounded-2xl border-2 p-3.5 text-left transition ${style}`}
+                    className={`flex w-full items-start gap-3.5 rounded-2xl border-2 p-3.5 text-left transition ${
+                      isSubmitted ? "cursor-not-allowed" : "cursor-pointer"
+                    } ${style}`}
                   >
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
-                        isSelected
+                        isSubmitted && isRightChoice
+                          ? "bg-emerald-600 text-white"
+                          : isSubmitted && isSelected && !isRightChoice
+                          ? "bg-rose-600 text-white"
+                          : isSelected
                           ? "bg-indigo-600 text-white"
                           : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
                       }`}
@@ -755,10 +799,38 @@ export function SchoolTestHub() {
                   </button>
                 );
               })}
+
+              {/* Submit Answer Button */}
+              <div className="pt-2">
+                {!isSubmitted ? (
+                  <button
+                    disabled={!userAnswer}
+                    onClick={handleSubmitAnswer}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>
+                      {userAnswer
+                        ? `Submit Final Answer (Choice ${userAnswer})`
+                        : "Select an Option Above to Submit"}
+                    </span>
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-100/80 px-4 py-2.5 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
+                    <span>
+                      🔒 Answer Locked (You submitted Choice{" "}
+                      <strong>{userAnswer}</strong>)
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Use <strong>Reset Answers</strong> at the top to retry
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Teacher Explanation & Paper Test Coaching Feedback */}
-            {userAnswer && (
+            {/* Teacher Explanation & Paper Test Coaching Feedback (Only shown AFTER clicking Submit) */}
+            {isSubmitted && userAnswer && (
               <div
                 className={`mt-5 rounded-2xl border-2 p-4 ${
                   isCorrect
