@@ -232,11 +232,16 @@ export function SchoolTestHub() {
     "split" | "expanded" | "collapsed"
   >("split");
 
-  // Drawing Canvas state
+  // Drawing & Typing "MY THINKING" Board state
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [penColor, setPenColor] = useState<string>("#4f46e5");
-  const [showDrawingPad, setShowDrawingPad] = useState<boolean>(true);
+  const [thinkingTool, setThinkingTool] = useState<"draw" | "type" | "erase">(
+    "draw"
+  );
+  const [penColor, setPenColor] = useState<string>("#2563eb");
+  const [penSize, setPenSize] = useState<"fine" | "med" | "thick">("med");
+  const [thinkingCollapsed, setThinkingCollapsed] = useState<boolean>(false);
+  const [thinkingHeight, setThinkingHeight] = useState<number>(260);
 
   const activeQuestions = useMemo(() => {
     if (filterMode === "original") {
@@ -316,6 +321,7 @@ export function SchoolTestHub() {
   const startDraw = (
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
   ) => {
+    if (thinkingTool === "type") return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -329,16 +335,23 @@ export function SchoolTestHub() {
   const draw = (
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
   ) => {
-    if (!isDrawing) return;
+    if (!isDrawing || thinkingTool === "type") return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const { x, y } = getCanvasCoords(canvas, e);
     ctx.lineTo(x, y);
-    ctx.strokeStyle = penColor;
-    ctx.lineWidth = 3.5;
+    if (thinkingTool === "erase") {
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.lineWidth = 22;
+    } else {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penSize === "fine" ? 2 : penSize === "med" ? 4 : 7;
+    }
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.stroke();
   };
 
@@ -889,118 +902,257 @@ export function SchoolTestHub() {
             {/* Working Area Body (Hidden only when Collapsed) */}
             {workAreaMode !== "collapsed" && (
               <div className="mt-4 space-y-5">
-                <div
-                  className={
-                    workAreaMode === "expanded"
-                      ? "grid grid-cols-1 gap-6 lg:grid-cols-2"
-                      : "space-y-4"
-                  }
-                >
-                  {/* LEFT SIDE OF WORK AREA: Kid's Own Steps + Equations Scratchpad */}
-                  <div className="space-y-4">
-                    {/* Kid's Own Step-by-Step Builder */}
-                    <div className="rounded-2xl border border-indigo-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-800/90">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-indigo-950 dark:text-white">
-                          🪜 Write Your Own Steps:
-                        </span>
-                        <button
-                          onClick={addKidStep}
-                          className="flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-black text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300"
-                        >
-                          <Plus className="h-3 w-3" />
-                          <span>Add Step</span>
-                        </button>
-                      </div>
+                {/* Kid's Own Step-by-Step Builder */}
+                <div className="rounded-2xl border border-indigo-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-800/90">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-indigo-950 dark:text-white">
+                      🪜 Write Your Own Steps:
+                    </span>
+                    <button
+                      onClick={addKidStep}
+                      className="flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-black text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add Step</span>
+                    </button>
+                  </div>
 
-                      <div className="mt-3 space-y-2.5">
-                        {currentKidSteps.map((stepText, sIdx) => (
-                          <div key={sIdx} className="flex items-center gap-2">
-                            <span className="flex h-7 w-16 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-[11px] font-black text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
-                              Step {sIdx + 1}
-                            </span>
-                            <input
-                              type="text"
-                              value={stepText}
-                              onChange={(e) =>
-                                updateKidStep(sIdx, e.target.value)
-                              }
-                              placeholder={
-                                sIdx === 0
-                                  ? "What do you know or calculate first?"
-                                  : `Write step ${sIdx + 1} of your work...`
-                              }
-                              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-900 focus:border-indigo-600 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                            />
-                          </div>
-                        ))}
+                  <div className="mt-3 space-y-2">
+                    {currentKidSteps.map((stepText, sIdx) => (
+                      <div key={sIdx} className="flex items-center gap-2">
+                        <span className="flex h-7 w-16 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-[11px] font-black text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
+                          Step {sIdx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={stepText}
+                          onChange={(e) =>
+                            updateKidStep(sIdx, e.target.value)
+                          }
+                          placeholder={
+                            sIdx === 0
+                              ? "What do you know or calculate first?"
+                              : `Write step ${sIdx + 1} of your work...`
+                          }
+                          className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-900 focus:border-indigo-600 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                        />
                       </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ============================================================
+                    "MY THINKING" INTERACTIVE DRAW + TYPE BOARD (Matches Screenshot!)
+                   ============================================================ */}
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/90 shadow-xs dark:border-slate-700 dark:bg-slate-800/90">
+                  {/* Top Header Row: MY THINKING + Expand Area + Collapse */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 pb-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        onClick={() => setThinkingCollapsed((c) => !c)}
+                        className="flex items-center gap-1 text-xs font-black tracking-wide text-slate-800 dark:text-white"
+                      >
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+                        <span>MY THINKING</span>
+                        {thinkingCollapsed ? (
+                          <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+                        ) : (
+                          <ChevronUp className="h-3.5 w-3.5 text-slate-500" />
+                        )}
+                      </button>
+                      <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        (Doodle, draw, or write your steps)
+                      </span>
                     </div>
 
-                    {/* Equation & Scratch Notes Textbox */}
-                    <div>
-                      <label className="block text-xs font-black text-slate-700 dark:text-slate-200">
-                        📝 Equations & Scratch Notes:
-                      </label>
-                      <textarea
-                        rows={workAreaMode === "expanded" ? 5 : 3}
-                        value={scratchNotes[currentQ.id] || ""}
-                        onChange={(e) =>
-                          setScratchNotes((prev) => ({
-                            ...prev,
-                            [currentQ.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Type your equations or number checks here (e.g. 4 × 2 = 8, then 8 × 7 = 56)..."
-                        className="mt-1.5 w-full rounded-2xl border border-slate-300 bg-white p-3 text-xs font-bold text-slate-800 focus:border-indigo-600 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                      />
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setThinkingCollapsed(false);
+                          if (workAreaMode !== "expanded") {
+                            setWorkAreaMode("expanded");
+                            setThinkingHeight((h) => Math.max(h, 360));
+                          } else {
+                            setWorkAreaMode("split");
+                            setThinkingHeight(260);
+                          }
+                        }}
+                        className="flex items-center gap-1 rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-extrabold text-sky-700 shadow-2xs hover:bg-sky-50 dark:border-slate-600 dark:bg-slate-900 dark:text-sky-300"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                        <span>
+                          {workAreaMode === "expanded"
+                            ? "Shrink Area"
+                            : "Expand Area"}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => setThinkingCollapsed((c) => !c)}
+                        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300"
+                      >
+                        {thinkingCollapsed ? "Expand" : "Collapse"}
+                      </button>
                     </div>
                   </div>
 
-                  {/* RIGHT SIDE OF WORK AREA: Freehand Drawing Pad */}
-                  <div>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="flex items-center gap-1.5 text-xs font-black text-slate-700 dark:text-slate-200">
-                        <PenTool className="h-3.5 w-3.5 text-indigo-600" />
-                        <span>
-                          Draw Equal Groups, Jumps, or Models{" "}
-                          {workAreaMode === "expanded" ? "(Large Board)" : ""}:
-                        </span>
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        {[
-                          { color: "#4f46e5", label: "Blue" },
-                          { color: "#e11d48", label: "Red" },
-                          { color: "#059669", label: "Green" },
-                        ].map((c) => (
+                  {!thinkingCollapsed && (
+                    <>
+                      {/* Toolbar Row: [Draw | Type]  [Colors]  [Fine | Med | Thick]  [Eraser] [Reset] */}
+                      <div className="flex flex-wrap items-center gap-2.5 px-4 pb-3">
+                        {/* Draw / Type Mode Switcher */}
+                        <div className="flex items-center rounded-xl bg-slate-200/70 p-0.5 dark:bg-slate-900">
                           <button
-                            key={c.color}
-                            onClick={() => setPenColor(c.color)}
-                            className={`h-5 w-5 rounded-full border-2 ${
-                              penColor === c.color
-                                ? "scale-110 border-slate-900"
-                                : "border-transparent"
+                            onClick={() => setThinkingTool("draw")}
+                            className={`flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-black transition ${
+                              thinkingTool === "draw"
+                                ? "bg-amber-400 text-slate-950 shadow-xs"
+                                : "text-slate-600 hover:text-slate-900 dark:text-slate-300"
                             }`}
-                            style={{ backgroundColor: c.color }}
-                            title={c.label}
-                          />
-                        ))}
-                        <button
-                          onClick={clearCanvas}
-                          className="ml-1 flex items-center gap-1 rounded-lg bg-slate-200 px-2 py-1 text-[10px] font-black text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          <span>Clear Pad</span>
-                        </button>
-                      </div>
-                    </div>
+                          >
+                            <PenTool className="h-3.5 w-3.5" />
+                            <span>Draw</span>
+                          </button>
+                          <button
+                            onClick={() => setThinkingTool("type")}
+                            className={`flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-black transition ${
+                              thinkingTool === "type"
+                                ? "bg-amber-400 text-slate-950 shadow-xs"
+                                : "text-slate-600 hover:text-slate-900 dark:text-slate-300"
+                            }`}
+                          >
+                            <span className="font-serif text-sm font-black leading-none">
+                              T
+                            </span>
+                            <span>Type</span>
+                          </button>
+                        </div>
 
-                    {showDrawingPad && (
-                      <div className="mt-2 overflow-hidden rounded-2xl border-2 border-dashed border-indigo-300 bg-white dark:border-slate-700">
+                        {/* 6 Color Swatches */}
+                        <div className="flex items-center gap-1.5">
+                          {[
+                            { color: "#2563eb", label: "Blue" },
+                            { color: "#7c3aed", label: "Purple" },
+                            { color: "#16a34a", label: "Green" },
+                            { color: "#d97706", label: "Orange" },
+                            { color: "#dc2626", label: "Red" },
+                            { color: "#1e293b", label: "Black" },
+                          ].map((c) => (
+                            <button
+                              key={c.color}
+                              onClick={() => {
+                                setPenColor(c.color);
+                                if (thinkingTool === "erase") {
+                                  setThinkingTool("draw");
+                                }
+                              }}
+                              className={`h-5 w-5 rounded-full transition ${
+                                penColor === c.color &&
+                                thinkingTool !== "erase"
+                                  ? "ring-2 ring-amber-400 ring-offset-2 scale-110"
+                                  : "opacity-85 hover:opacity-100"
+                              }`}
+                              style={{ backgroundColor: c.color }}
+                              title={c.label}
+                            />
+                          ))}
+                        </div>
+
+                        {/* Fine / Med / Thick Selector */}
+                        <div className="flex items-center rounded-xl border border-slate-200 bg-white px-1 py-0.5 text-[11px] font-bold dark:border-slate-700 dark:bg-slate-900">
+                          {(
+                            [
+                              { id: "fine", label: "Fine" },
+                              { id: "med", label: "Med" },
+                              { id: "thick", label: "Thick" },
+                            ] as const
+                          ).map((sz) => (
+                            <button
+                              key={sz.id}
+                              onClick={() => setPenSize(sz.id)}
+                              className={`rounded-lg px-2 py-0.5 transition ${
+                                penSize === sz.id
+                                  ? "bg-slate-100 font-black text-slate-900 dark:bg-slate-800 dark:text-white"
+                                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                              }`}
+                            >
+                              {sz.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Eraser & Clear/Reset Icons */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() =>
+                              setThinkingTool((t) =>
+                                t === "erase" ? "draw" : "erase"
+                              )
+                            }
+                            className={`rounded-lg p-1.5 transition ${
+                              thinkingTool === "erase"
+                                ? "bg-amber-400 text-slate-950 shadow-xs"
+                                : "text-slate-500 hover:bg-slate-200/70 dark:text-slate-300"
+                            }`}
+                            title="Eraser"
+                          >
+                            <Eraser className="h-4 w-4" />
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              clearCanvas();
+                              setScratchNotes((prev) => ({
+                                ...prev,
+                                [currentQ.id]: "",
+                              }));
+                            }}
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200/70 dark:text-slate-300"
+                            title="Clear Board (Drawings & Typed Text)"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Dotted Grid Workspace: Layered Canvas (Draw) + Transparent Textarea (Type) */}
+                      <div
+                        style={{ height: `${thinkingHeight}px` }}
+                        className="relative mx-3 mb-2 overflow-hidden rounded-xl border border-slate-200/90 bg-white bg-[radial-gradient(#cbd5e1_1.5px,transparent_1.5px)] [background-size:20px_20px] transition-all dark:border-slate-700 dark:bg-slate-950"
+                      >
+                        {/* Layer 1: Typed Text Layer on the Dotted Grid */}
+                        <textarea
+                          value={scratchNotes[currentQ.id] || ""}
+                          onChange={(e) =>
+                            setScratchNotes((prev) => ({
+                              ...prev,
+                              [currentQ.id]: e.target.value,
+                            }))
+                          }
+                          placeholder={
+                            thinkingTool === "type"
+                              ? "Click here to type your steps, equations, or table rules directly on the board..."
+                              : ""
+                          }
+                          style={{ color: penColor }}
+                          className={`absolute inset-0 h-full w-full resize-none bg-transparent p-4 font-bold leading-relaxed focus:outline-none ${
+                            penSize === "fine"
+                              ? "text-xs"
+                              : penSize === "med"
+                              ? "text-sm"
+                              : "text-base"
+                          } ${
+                            thinkingTool === "type"
+                              ? "z-20 cursor-text pointer-events-auto"
+                              : "z-10 pointer-events-none"
+                          }`}
+                        />
+
+                        {/* Layer 2: HTML5 Freehand Drawing Canvas on the Same Dotted Grid */}
                         <canvas
                           ref={canvasRef}
-                          width={760}
-                          height={360}
+                          width={900}
+                          height={600}
                           onMouseDown={startDraw}
                           onMouseMove={draw}
                           onMouseUp={endDraw}
@@ -1008,15 +1160,37 @@ export function SchoolTestHub() {
                           onTouchStart={startDraw}
                           onTouchMove={draw}
                           onTouchEnd={endDraw}
-                          className={`w-full cursor-crosshair touch-none bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] transition-all ${
-                            workAreaMode === "expanded"
-                              ? "h-[320px]"
-                              : "h-[200px]"
+                          className={`absolute inset-0 h-full w-full touch-none ${
+                            thinkingTool === "type"
+                              ? "z-10 pointer-events-none"
+                              : "z-20 cursor-crosshair pointer-events-auto"
                           }`}
                         />
                       </div>
-                    )}
-                  </div>
+
+                      {/* Bottom Footer Bar: "Need more room? Expand Thinking Area" + "Height: 260px" */}
+                      <div className="flex items-center justify-between px-4 pb-2.5 pt-0.5">
+                        <button
+                          onClick={() =>
+                            setThinkingHeight((h) =>
+                              h === 260 ? 400 : h === 400 ? 560 : 260
+                            )
+                          }
+                          className="flex items-center gap-1 text-[11px] font-bold text-sky-700 underline decoration-sky-400/60 underline-offset-2 hover:text-sky-900 dark:text-sky-300"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                          <span>
+                            {thinkingHeight >= 560
+                              ? "Reset Thinking Area Height"
+                              : "Need more room? Expand Thinking Area"}
+                          </span>
+                        </button>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          Height: {thinkingHeight}px
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* OPTIONAL GUIDED STEPS (HIDDEN BY DEFAULT!) */}
