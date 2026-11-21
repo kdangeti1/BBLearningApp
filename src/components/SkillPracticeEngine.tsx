@@ -7,6 +7,7 @@ import {
   getSmartScoreColor,
   speakText,
 } from "@/lib/utils";
+import { ReadAloudControls } from "@/components/ReadAloudControls";
 import {
   Volume2,
   Lightbulb,
@@ -465,18 +466,10 @@ export function SkillPracticeEngine() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() =>
-                    speakText(
-                      `${currentQuestion.passageExcerpt ? currentQuestion.passageExcerpt + ". " : ""}${currentQuestion.prompt}`
-                    )
-                  }
-                  className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300"
-                >
-                  <Volume2 className="h-4 w-4" />
-                  <span>Read Aloud</span>
-                </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <ReadAloudControls
+                  text={`${currentQuestion.passageExcerpt ? currentQuestion.passageExcerpt + ". " : ""}${currentQuestion.prompt}`}
+                />
                 <button
                   onClick={() => setShowWorkedExample(!showWorkedExample)}
                   className="flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200"

@@ -7,7 +7,7 @@ import {
   SchoolTestQuestion,
   Base10ModelVisual,
 } from "@/data/school-tests";
-import { speakText } from "@/lib/utils";
+import { ReadAloudControls } from "@/components/ReadAloudControls";
 import {
   CheckCircle2,
   AlertCircle,
@@ -695,13 +695,7 @@ export function SchoolTestHub() {
                   )}
                 </button>
 
-                <button
-                  onClick={() => speakText(currentQ.prompt)}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-extrabold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                >
-                  <Volume2 className="h-4 w-4 text-indigo-600" />
-                  <span>Read Aloud</span>
-                </button>
+                <ReadAloudControls text={currentQ.prompt} />
               </div>
             </div>
 

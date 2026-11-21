@@ -54,6 +54,7 @@ export function getSmartScoreColor(score: number): string {
 
 /**
  * Browser-native Web Speech API Text-to-Speech (100% Free Tier, works offline).
+ * Automatically uses the child's preferred voice if selected in ReadAloudControls.
  */
 export function speakText(text: string, rate = 0.92) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -63,7 +64,19 @@ export function speakText(text: string, rate = 0.92) {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = rate;
     utterance.pitch = 1.05;
-    utterance.lang = "en-US";
+    const savedVoiceUri = localStorage.getItem("bb_preferred_voice_uri");
+    if (savedVoiceUri) {
+      const voices = window.speechSynthesis.getVoices();
+      const matched = voices.find((v) => v.voiceURI === savedVoiceUri);
+      if (matched) {
+        utterance.voice = matched;
+        utterance.lang = matched.lang || "en-US";
+      } else {
+        utterance.lang = "en-US";
+      }
+    } else {
+      utterance.lang = "en-US";
+    }
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.warn("Speech synthesis unavailable:", err);
