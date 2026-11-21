@@ -97,12 +97,23 @@ export type MainTab =
   | "curriculum_import"
   | "manage_children";
 
+export interface SchoolTestSessionDoc {
+  studentId: string;
+  answers: Record<string, string>;
+  submittedQuestions: Record<string, boolean>;
+  kidOwnSteps: Record<string, string[]>;
+  stepInputs: Record<string, string>;
+  scratchNotes: Record<string, string>;
+  updatedAt: string;
+}
+
 interface LearningStoreState {
   // Authentication & Multi-Child State
   isAuthenticated: boolean;
   loggedInAccountType: "admin" | "child" | null;
   studentsList: StudentDoc[];
   allStudentsProgress: Record<string, Record<string, SkillProgressDoc>>;
+  schoolTestSessions: Record<string, SchoolTestSessionDoc>;
 
   // Navigation & Role
   activeRole: ActiveRole;
@@ -179,6 +190,10 @@ interface LearningStoreState {
   addFluencyPracticeXP: (wpm: number, accuracy: number) => void;
   addBrainGameReward: (xp: number, coins: number, stars?: number) => void;
   addStaarTestReward: (xp: number, coins: number, stars?: number, minutesSpent?: number) => void;
+  saveSchoolTestSession: (
+    patch: Partial<Omit<SchoolTestSessionDoc, "studentId" | "updatedAt">>
+  ) => void;
+  resetSchoolTestSession: () => void;
   addCustomPracticeQuestions: (newQuestions: QuestionDoc[]) => void;
   importCustomCurriculumData: (payload: {
     units?: UnitDoc[];
@@ -199,6 +214,7 @@ export const useLearningStore = create<LearningStoreState>()(
       loggedInAccountType: null,
       studentsList: [],
       allStudentsProgress: {},
+      schoolTestSessions: {},
 
       activeRole: "student",
       activeTab: "dashboard",
@@ -493,6 +509,19 @@ export const useLearningStore = create<LearningStoreState>()(
             }
           });
 
+          const schoolSessionsSnap = await getDocs(
+            collection(db, FIRESTORE_COLLECTIONS.SCHOOL_TEST_SESSIONS)
+          );
+          const remoteSchoolSessions: Record<string, SchoolTestSessionDoc> = {
+            ...get().schoolTestSessions,
+          };
+          schoolSessionsSnap.forEach((docSnap) => {
+            const sess = docSnap.data() as SchoolTestSessionDoc;
+            if (sess && sess.studentId) {
+              remoteSchoolSessions[sess.studentId] = sess;
+            }
+          });
+
           // Sync directly with Firestore as single source of truth
           const currentStudentId = get().student?.id;
           const activeStudent =
@@ -503,6 +532,7 @@ export const useLearningStore = create<LearningStoreState>()(
           set({
             studentsList: remoteStudents,
             allStudentsProgress: remoteProgressByStudent,
+            schoolTestSessions: remoteSchoolSessions,
             student: activeStudent,
             progress: remoteProgressByStudent[activeStudent.id] || {},
           });
@@ -901,6 +931,78 @@ export const useLearningStore = create<LearningStoreState>()(
         });
       },
 
+      saveSchoolTestSession: (patch) => {
+        set((state) => {
+          const studentKey = state.student?.id || "guest";
+          const existing: SchoolTestSessionDoc = state.schoolTestSessions[
+            studentKey
+          ] || {
+            studentId: studentKey,
+            answers: {},
+            submittedQuestions: {},
+            kidOwnSteps: {},
+            stepInputs: {},
+            scratchNotes: {},
+            updatedAt: new Date().toISOString(),
+          };
+          const updatedSession: SchoolTestSessionDoc = {
+            ...existing,
+            ...patch,
+            studentId: studentKey,
+            updatedAt: new Date().toISOString(),
+          };
+          const nextSessions = {
+            ...state.schoolTestSessions,
+            [studentKey]: updatedSession,
+          };
+          if (isFirebaseConfigured && db) {
+            setDoc(
+              doc(
+                db,
+                FIRESTORE_COLLECTIONS.SCHOOL_TEST_SESSIONS,
+                studentKey
+              ),
+              updatedSession
+            ).catch(() => {});
+          }
+          return {
+            schoolTestSessions: nextSessions,
+          };
+        });
+      },
+
+      resetSchoolTestSession: () => {
+        set((state) => {
+          const studentKey = state.student?.id || "guest";
+          const emptySession: SchoolTestSessionDoc = {
+            studentId: studentKey,
+            answers: {},
+            submittedQuestions: {},
+            kidOwnSteps: {},
+            stepInputs: {},
+            scratchNotes: {},
+            updatedAt: new Date().toISOString(),
+          };
+          const nextSessions = {
+            ...state.schoolTestSessions,
+            [studentKey]: emptySession,
+          };
+          if (isFirebaseConfigured && db) {
+            setDoc(
+              doc(
+                db,
+                FIRESTORE_COLLECTIONS.SCHOOL_TEST_SESSIONS,
+                studentKey
+              ),
+              emptySession
+            ).catch(() => {});
+          }
+          return {
+            schoolTestSessions: nextSessions,
+          };
+        });
+      },
+
       addCustomPracticeQuestions: (newQuestions) =>
         set((state) => ({
           questions: [...state.questions, ...newQuestions],
@@ -1031,9 +1133,19 @@ export const useLearningStore = create<LearningStoreState>()(
               );
             }
           }
+          for (const sess of Object.values(state.schoolTestSessions)) {
+            await setDoc(
+              doc(
+                db,
+                FIRESTORE_COLLECTIONS.SCHOOL_TEST_SESSIONS,
+                sess.studentId
+              ),
+              sess
+            );
+          }
           return {
             synced: true,
-            message: `Synced ${state.studentsList.length} child profile(s), Admin account, and all skill progress records to Cloud Firestore!`,
+            message: `Synced ${state.studentsList.length} child profile(s), Admin account, School Test responses, and all skill progress records to Cloud Firestore!`,
           };
         } catch (err) {
           return {
@@ -1051,6 +1163,7 @@ export const useLearningStore = create<LearningStoreState>()(
         loggedInAccountType: state.loggedInAccountType,
         studentsList: state.studentsList,
         allStudentsProgress: state.allStudentsProgress,
+        schoolTestSessions: state.schoolTestSessions,
         activeRole: state.activeRole,
         selectedSubjectId: state.selectedSubjectId,
         selectedUnitId: state.selectedUnitId,

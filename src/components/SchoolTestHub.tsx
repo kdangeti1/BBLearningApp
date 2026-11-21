@@ -204,7 +204,13 @@ function PlaceValueJumpChart({ numberStr }: { numberStr: string }) {
 }
 
 export function SchoolTestHub() {
-  const { student, addStaarTestReward } = useLearningStore();
+  const {
+    student,
+    schoolTestSessions,
+    saveSchoolTestSession,
+    resetSchoolTestSession,
+    addStaarTestReward,
+  } = useLearningStore();
 
   // Filter modes:
   // "original" = Exact 9 questions from school test
@@ -217,20 +223,17 @@ export function SchoolTestHub() {
   const [randomSeed, setRandomSeed] = useState<number>(1);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // User selected answers (before & after submit)
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  // Tracks which questions have been locked/submitted via the Submit Answer button
-  const [submittedQuestions, setSubmittedQuestions] = useState<
-    Record<string, boolean>
-  >({});
-  // Kid's own custom steps per question: questionId -> array of step strings
-  const [kidOwnSteps, setKidOwnSteps] = useState<Record<string, string[]>>({});
+  // Persisted per-student School Test Session (saved in Zustand localStorage + Firebase Cloud Firestore)
+  const studentKey = student?.id || "guest";
+  const currentSession = schoolTestSessions[studentKey];
+  const answers = currentSession?.answers || {};
+  const submittedQuestions = currentSession?.submittedQuestions || {};
+  const kidOwnSteps = currentSession?.kidOwnSteps || {};
+  const stepInputs = currentSession?.stepInputs || {};
+  const scratchNotes = currentSession?.scratchNotes || {};
+
   // Guided steps visibility (HIDDEN by default so kids come up with their own steps first!)
   const [showGuidedSteps, setShowGuidedSteps] = useState<boolean>(false);
-  // User guided step inputs: `${questionId}-step-${stepNumber}` -> value
-  const [stepInputs, setStepInputs] = useState<Record<string, string>>({});
-  // Freeform text scratchpad per question
-  const [scratchNotes, setScratchNotes] = useState<Record<string, string>>({});
   // Working area layout mode: "split" (side-by-side), "expanded" (full-width large area), "collapsed" (minimized)
   const [workAreaMode, setWorkAreaMode] = useState<
     "split" | "expanded" | "collapsed"
@@ -295,13 +298,17 @@ export function SchoolTestHub() {
   const updateKidStep = (idx: number, val: string) => {
     const updated = [...currentKidSteps];
     updated[idx] = val;
-    setKidOwnSteps((prev) => ({ ...prev, [currentQ.id]: updated }));
+    saveSchoolTestSession({
+      kidOwnSteps: { ...kidOwnSteps, [currentQ.id]: updated },
+    });
   };
   const addKidStep = () => {
-    setKidOwnSteps((prev) => ({
-      ...prev,
-      [currentQ.id]: [...currentKidSteps, ""],
-    }));
+    saveSchoolTestSession({
+      kidOwnSteps: {
+        ...kidOwnSteps,
+        [currentQ.id]: [...currentKidSteps, ""],
+      },
+    });
   };
 
   // Drawing handlers (scaled accurately for both normal and expanded canvas sizes)
@@ -390,14 +397,18 @@ export function SchoolTestHub() {
   // Once submitted, options are locked and cannot be changed unless Reset Answers is clicked at the top.
   const handleSelectOption = (optId: string) => {
     if (isSubmitted) return;
-    setAnswers((prev) => ({ ...prev, [currentQ.id]: optId }));
+    saveSchoolTestSession({
+      answers: { ...answers, [currentQ.id]: optId },
+    });
   };
 
   // Submitting locks the selected answer, checks correctness, and reveals explanation
   const handleSubmitAnswer = () => {
     const selected = answers[currentQ.id];
     if (!selected || isSubmitted) return;
-    setSubmittedQuestions((prev) => ({ ...prev, [currentQ.id]: true }));
+    saveSchoolTestSession({
+      submittedQuestions: { ...submittedQuestions, [currentQ.id]: true },
+    });
     if (selected.toUpperCase() === currentQ.correctAnswer.toUpperCase()) {
       playSuccessSound();
       addStaarTestReward(20, 6, 1, 2);
@@ -502,8 +513,7 @@ export function SchoolTestHub() {
             onClick={() => {
               setFilterMode("random_retake");
               setRandomSeed((s) => s + 1);
-              setAnswers({});
-              setSubmittedQuestions({});
+              resetSchoolTestSession();
               setCurrentIndex(0);
             }}
             className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-black transition ${
@@ -568,20 +578,21 @@ export function SchoolTestHub() {
           })}
         </div>
 
-        <button
-          onClick={() => {
-            setAnswers({});
-            setSubmittedQuestions({});
-            setStepInputs({});
-            setKidOwnSteps({});
-            setScratchNotes({});
-            clearCanvas();
-          }}
-          className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          <span>Reset Answers</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="hidden rounded-lg bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 sm:inline-block dark:bg-emerald-950/60 dark:text-emerald-300">
+            ☁️ Auto-Saved to {student?.name || "Student"}&apos;s Profile
+          </span>
+          <button
+            onClick={() => {
+              resetSchoolTestSession();
+              clearCanvas();
+            }}
+            className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>Reset Answers</span>
+          </button>
+        </div>
       </div>
 
       {/* ============================================================
@@ -1174,10 +1185,12 @@ export function SchoolTestHub() {
                           <button
                             onClick={() => {
                               clearCanvas();
-                              setScratchNotes((prev) => ({
-                                ...prev,
-                                [currentQ.id]: "",
-                              }));
+                              saveSchoolTestSession({
+                                scratchNotes: {
+                                  ...scratchNotes,
+                                  [currentQ.id]: "",
+                                },
+                              });
                             }}
                             className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200/70 dark:text-slate-300"
                             title="Clear Board (Drawings & Typed Text)"
@@ -1196,10 +1209,12 @@ export function SchoolTestHub() {
                         <textarea
                           value={scratchNotes[currentQ.id] || ""}
                           onChange={(e) =>
-                            setScratchNotes((prev) => ({
-                              ...prev,
-                              [currentQ.id]: e.target.value,
-                            }))
+                            saveSchoolTestSession({
+                              scratchNotes: {
+                                ...scratchNotes,
+                                [currentQ.id]: e.target.value,
+                              },
+                            })
                           }
                           placeholder={
                             thinkingTool === "type"
@@ -1333,10 +1348,12 @@ export function SchoolTestHub() {
                                 type="text"
                                 value={val}
                                 onChange={(e) =>
-                                  setStepInputs((prev) => ({
-                                    ...prev,
-                                    [key]: e.target.value,
-                                  }))
+                                  saveSchoolTestSession({
+                                    stepInputs: {
+                                      ...stepInputs,
+                                      [key]: e.target.value,
+                                    },
+                                  })
                                 }
                                 placeholder={step.placeholder}
                                 className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-900 focus:border-indigo-600 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"

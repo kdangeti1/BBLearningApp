@@ -64,6 +64,7 @@ export const FIRESTORE_COLLECTIONS = {
   PROGRESS: "progress",
   BADGES: "badges",
   REPORTS: "reports",
+  SCHOOL_TEST_SESSIONS: "school_test_sessions",
 } as const;
 
 export { app, auth, db, storage };
