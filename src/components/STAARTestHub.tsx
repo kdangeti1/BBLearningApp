@@ -7,7 +7,7 @@ import {
   STAAR_REPORTING_CATEGORIES,
   STAARQuestion,
 } from "@/data/staar-tests";
-import { speakText } from "@/lib/utils";
+import { ReadAloudControls } from "@/components/ReadAloudControls";
 import {
   FileText,
   CheckCircle2,
@@ -385,15 +385,8 @@ export function STAARTestHub() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => speakText(currentQ.prompt)}
-                    className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-extrabold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                    title="Read Question Aloud"
-                  >
-                    <Volume2 className="h-4 w-4 text-indigo-600" />
-                    <span>Read to Me</span>
-                  </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <ReadAloudControls text={currentQ.prompt} />
                   <button
                     onClick={() => toggleFlag(currentQ.id)}
                     className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-extrabold transition ${
