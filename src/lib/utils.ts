@@ -54,7 +54,7 @@ export function getSmartScoreColor(score: number): string {
 
 /**
  * Browser-native Web Speech API Text-to-Speech (100% Free Tier, works offline).
- * Automatically uses the child's preferred voice if selected in ReadAloudControls.
+ * Automatically uses the child's preferred Male/Female US English voice preset.
  */
 export function speakText(text: string, rate = 0.92) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -62,21 +62,25 @@ export function speakText(text: string, rate = 0.92) {
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[_*#`~]/g, " ");
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = rate;
-    utterance.pitch = 1.05;
-    const savedVoiceUri = localStorage.getItem("bb_preferred_voice_uri");
-    if (savedVoiceUri) {
-      const voices = window.speechSynthesis.getVoices();
-      const matched = voices.find((v) => v.voiceURI === savedVoiceUri);
-      if (matched) {
-        utterance.voice = matched;
-        utterance.lang = matched.lang || "en-US";
-      } else {
-        utterance.lang = "en-US";
-      }
+    const savedPreset = localStorage.getItem("bb_preferred_voice_preset") || "female_teacher";
+    const isMale = savedPreset.startsWith("male");
+    const voices = window.speechSynthesis.getVoices();
+    const usVoices = voices.filter((v) => v.lang.toLowerCase().startsWith("en-us") || v.lang.toLowerCase().startsWith("en_us"));
+    const pool = usVoices.length > 0 ? usVoices : voices.filter((v) => v.lang.toLowerCase().startsWith("en"));
+
+    const keywords = isMale
+      ? ["david", "mark", "guy", "christopher", "eric", "roger", "andrew", "brian", "alex", "male"]
+      : ["zira", "aria", "jenny", "michelle", "ana", "sara", "samantha", "ava", "emma", "female", "google us english"];
+
+    const matched = pool.find((v) => keywords.some((kw) => v.name.toLowerCase().includes(kw))) || pool[0];
+    if (matched) {
+      utterance.voice = matched;
+      utterance.lang = matched.lang || "en-US";
     } else {
       utterance.lang = "en-US";
     }
+    utterance.rate = savedPreset === "female_cheerful" ? 0.96 : savedPreset === "male_storyteller" ? 0.88 : rate;
+    utterance.pitch = savedPreset === "female_cheerful" ? 1.2 : savedPreset === "male_storyteller" ? 0.82 : isMale ? 0.92 : 1.05;
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.warn("Speech synthesis unavailable:", err);
