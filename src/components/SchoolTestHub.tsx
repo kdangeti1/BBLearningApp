@@ -228,6 +228,7 @@ export function SchoolTestHub() {
   const currentSession = schoolTestSessions[studentKey];
   const answers = currentSession?.answers || {};
   const submittedQuestions = currentSession?.submittedQuestions || {};
+  const optionMarks = currentSession?.optionMarks || {};
   const kidOwnSteps = currentSession?.kidOwnSteps || {};
   const stepInputs = currentSession?.stepInputs || {};
   const scratchNotes = currentSession?.scratchNotes || {};
@@ -397,9 +398,52 @@ export function SchoolTestHub() {
   // Once submitted, options are locked and cannot be changed unless Reset Answers is clicked at the top.
   const handleSelectOption = (optId: string) => {
     if (isSubmitted) return;
+    const markKey = `${currentQ.id}-${optId}`;
+    // If the kid clicks an option that was marked X (Not Correct), clear the X mark so they can select it
+    const nextMarks = { ...optionMarks };
+    if (nextMarks[markKey] === "X") {
+      delete nextMarks[markKey];
+    }
     saveSchoolTestSession({
       answers: { ...answers, [currentQ.id]: optId },
+      optionMarks: nextMarks,
     });
+  };
+
+  // Toggle M (Maybe - Yellow) or X (Not Correct - Red) on an option for process-of-elimination
+  const handleToggleOptionMark = (
+    optId: string,
+    mark: "M" | "X",
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    if (isSubmitted) return;
+    const markKey = `${currentQ.id}-${optId}`;
+    const nextMarks = { ...optionMarks };
+    if (nextMarks[markKey] === mark) {
+      delete nextMarks[markKey];
+    } else {
+      nextMarks[markKey] = mark;
+    }
+    // If marking X (Not Correct) on an option that was currently selected as the final answer, deselect it
+    const nextAnswers = { ...answers };
+    if (nextMarks[markKey] === "X" && nextAnswers[currentQ.id] === optId) {
+      delete nextAnswers[currentQ.id];
+    }
+    saveSchoolTestSession({
+      optionMarks: nextMarks,
+      answers: nextAnswers,
+    });
+  };
+
+  // Reset all M / X marks on the current question
+  const handleResetQuestionMarks = () => {
+    if (isSubmitted) return;
+    const nextMarks = { ...optionMarks };
+    currentQ.options.forEach((opt) => {
+      delete nextMarks[`${currentQ.id}-${opt.id}`];
+    });
+    saveSchoolTestSession({ optionMarks: nextMarks });
   };
 
   // Submitting locks the selected answer, checks correctness, and reveals explanation
@@ -754,11 +798,27 @@ export function SchoolTestHub() {
                 <div className="text-xs font-black uppercase tracking-wider text-slate-400">
                   {isSubmitted
                     ? "🔒 Response Submitted & Locked (Use 'Reset Answers' at top to retry)"
-                    : "Select Your Answer Choice, Then Click Submit Answer →"}
+                    : "Mark M (Maybe) or X (Not Correct) to Eliminate, Then Select & Submit →"}
                 </div>
+
+                {!isSubmitted &&
+                  currentQ.options.some(
+                    (o) => Boolean(optionMarks[`${currentQ.id}-${o.id}`])
+                  ) && (
+                    <button
+                      type="button"
+                      onClick={handleResetQuestionMarks}
+                      className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      <span>Reset M / X Marks</span>
+                    </button>
+                  )}
               </div>
+
               {currentQ.options.map((opt) => {
                 const isSelected = userAnswer === opt.id;
+                const mark = optionMarks[`${currentQ.id}-${opt.id}`]; // "M" | "X" | undefined
                 const isRightChoice =
                   opt.id.toUpperCase() ===
                   currentQ.correctAnswer.toUpperCase();
@@ -766,9 +826,17 @@ export function SchoolTestHub() {
                 let style =
                   "border-slate-200 bg-slate-50/70 hover:border-indigo-300 hover:bg-indigo-50/40 text-slate-800 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-100";
 
-                if (!isSubmitted && isSelected) {
-                  style =
-                    "border-indigo-600 bg-indigo-50/90 text-indigo-950 font-bold shadow-xs dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-100";
+                if (!isSubmitted) {
+                  if (isSelected) {
+                    style =
+                      "border-indigo-600 bg-indigo-50/90 text-indigo-950 font-bold shadow-xs dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-100";
+                  } else if (mark === "M") {
+                    style =
+                      "border-amber-400 bg-amber-50/90 text-amber-950 font-semibold dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-100";
+                  } else if (mark === "X") {
+                    style =
+                      "border-rose-300 bg-rose-50/60 text-rose-900/75 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300/70";
+                  }
                 } else if (isSubmitted) {
                   if (isRightChoice) {
                     style =
@@ -783,31 +851,84 @@ export function SchoolTestHub() {
                 }
 
                 return (
-                  <button
+                  <div
                     key={opt.id}
-                    disabled={isSubmitted}
-                    onClick={() => handleSelectOption(opt.id)}
-                    className={`flex w-full items-start gap-3.5 rounded-2xl border-2 p-3.5 text-left transition ${
+                    onClick={() => {
+                      if (!isSubmitted) handleSelectOption(opt.id);
+                    }}
+                    className={`flex w-full items-center justify-between gap-3 rounded-2xl border-2 p-3.5 text-left transition ${
                       isSubmitted ? "cursor-not-allowed" : "cursor-pointer"
                     } ${style}`}
                   >
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
-                        isSubmitted && isRightChoice
-                          ? "bg-emerald-600 text-white"
-                          : isSubmitted && isSelected && !isRightChoice
-                          ? "bg-rose-600 text-white"
-                          : isSelected
-                          ? "bg-indigo-600 text-white"
-                          : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
-                      }`}
+                    <div className="flex items-start gap-3.5">
+                      <span
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
+                          isSubmitted && isRightChoice
+                            ? "bg-emerald-600 text-white"
+                            : isSubmitted && isSelected && !isRightChoice
+                            ? "bg-rose-600 text-white"
+                            : isSelected
+                            ? "bg-indigo-600 text-white"
+                            : mark === "M"
+                            ? "bg-amber-400 text-slate-950"
+                            : mark === "X"
+                            ? "bg-rose-500 text-white"
+                            : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                        }`}
+                      >
+                        {opt.id}
+                      </span>
+                      <span
+                        className={`pt-0.5 text-sm leading-relaxed ${
+                          !isSubmitted && mark === "X"
+                            ? "line-through decoration-rose-500 decoration-2 opacity-75"
+                            : ""
+                        }`}
+                      >
+                        {opt.text}
+                      </span>
+                    </div>
+
+                    {/* Right Side: M (Maybe - Yellow) & X (Not Correct - Red) Strategy Buttons */}
+                    <div
+                      className="flex shrink-0 items-center gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {opt.id}
-                    </span>
-                    <span className="pt-0.5 text-sm leading-relaxed">
-                      {opt.text}
-                    </span>
-                  </button>
+                      <button
+                        type="button"
+                        disabled={isSubmitted}
+                        onClick={(e) => handleToggleOptionMark(opt.id, "M", e)}
+                        title="Mark M (Maybe)"
+                        className={`flex h-7 items-center gap-1 rounded-lg border px-2 text-xs font-black transition ${
+                          mark === "M"
+                            ? "border-amber-500 bg-amber-400 text-slate-950 shadow-xs"
+                            : "border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-200/80 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                        } ${isSubmitted ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        <span>M</span>
+                        <span className="hidden text-[10px] font-bold sm:inline">
+                          Maybe
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isSubmitted}
+                        onClick={(e) => handleToggleOptionMark(opt.id, "X", e)}
+                        title="Mark X (Not Correct / Eliminate)"
+                        className={`flex h-7 items-center gap-1 rounded-lg border px-2 text-xs font-black transition ${
+                          mark === "X"
+                            ? "border-rose-600 bg-rose-500 text-white shadow-xs"
+                            : "border-rose-300 bg-rose-50/80 text-rose-700 hover:bg-rose-200/80 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-300"
+                        } ${isSubmitted ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        <span>X</span>
+                        <span className="hidden text-[10px] font-bold sm:inline">
+                          Eliminate
+                        </span>
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
 

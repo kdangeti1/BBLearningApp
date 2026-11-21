@@ -101,6 +101,7 @@ export interface SchoolTestSessionDoc {
   studentId: string;
   answers: Record<string, string>;
   submittedQuestions: Record<string, boolean>;
+  optionMarks?: Record<string, "M" | "X">;
   kidOwnSteps: Record<string, string[]>;
   stepInputs: Record<string, string>;
   scratchNotes: Record<string, string>;
@@ -940,6 +941,7 @@ export const useLearningStore = create<LearningStoreState>()(
             studentId: studentKey,
             answers: {},
             submittedQuestions: {},
+            optionMarks: {},
             kidOwnSteps: {},
             stepInputs: {},
             scratchNotes: {},
@@ -978,6 +980,7 @@ export const useLearningStore = create<LearningStoreState>()(
             studentId: studentKey,
             answers: {},
             submittedQuestions: {},
+            optionMarks: {},
             kidOwnSteps: {},
             stepInputs: {},
             scratchNotes: {},
